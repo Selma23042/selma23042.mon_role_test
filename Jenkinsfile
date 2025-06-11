@@ -23,9 +23,11 @@ pipeline {
                             pip install ansible ansible-lint molecule molecule-plugins docker
                             
                             # Run linting
+                            echo "Running ansible-lint..."
                             ansible-lint .
                             
                             # Run molecule tests
+                            echo "Running molecule tests..."
                             molecule test
                         '''
                     }
@@ -34,12 +36,6 @@ pipeline {
         }
         
         stage('Publish to Galaxy') {
-            when {
-                anyOf {
-            branch 'main'
-            tag pattern: 'v\\d+\\.\\d+\\.\\d+', comparator: 'REGEXP'
-        }
-                }
             steps {
                 script {
                     docker.image('python:3.10').inside() {
@@ -47,8 +43,16 @@ pipeline {
                             # Install ansible
                             pip install ansible
                             
-                            # Import du rôle vers Galaxy avec tous les paramètres nécessaires
-                            echo "Importing role to Ansible Galaxy..."
+                            # Vérifier les informations avant l'import
+                            echo "=== Galaxy Import Information ==="
+                            echo "Repository: Selma23042/selma23042.mon_role_test"
+                            echo "Branch: main"
+                            echo "Role name: mon_role_test"
+                            echo "Galaxy URL: https://galaxy.ansible.com"
+                            echo "================================="
+                            
+                            # Import du rôle vers Galaxy
+                            echo "Starting import to Ansible Galaxy..."
                             
                             ansible-galaxy role import \\
                                 --server https://galaxy.ansible.com \\
@@ -58,7 +62,13 @@ pipeline {
                                 Selma23042 selma23042.mon_role_test
                             
                             # Vérifier le statut de l'import
-                            echo "Import command completed. Check Galaxy for status."
+                            if [ $? -eq 0 ]; then
+                                echo "✅ Role successfully imported to Galaxy!"
+                                echo "🔗 Available at: https://galaxy.ansible.com/Selma23042/mon_role_test"
+                            else
+                                echo "❌ Import failed. Check the logs above for details."
+                                exit 1
+                            fi
                         '''
                     }
                 }
@@ -71,10 +81,15 @@ pipeline {
             cleanWs()
         }
         success {
-            echo 'Pipeline completed successfully! Check https://galaxy.ansible.com/Selma23042/mon_role_test'
+            echo '🎉 Pipeline completed successfully!'
+            echo '📦 Role available at: https://galaxy.ansible.com/Selma23042/mon_role_test'
+            echo '📥 Install with: ansible-galaxy install Selma23042.mon_role_test'
         }
         failure {
-            echo 'Pipeline failed!'
+            echo '❌ Pipeline failed! Check the logs for details.'
+        }
+        unstable {
+            echo '⚠️  Pipeline completed with warnings.'
         }
     }
 }
