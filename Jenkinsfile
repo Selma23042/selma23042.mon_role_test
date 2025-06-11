@@ -52,7 +52,7 @@ pipeline {
                                 --token "$GALAXY_TOKEN" \\
                                 --branch main \\
                                 --role-name mon_role_test \\
-                                Selma23042 mon_role_test
+                                Selma23042 selma23042.mon_role_test
                             
                             # Vérifier le statut de l'import
                             echo "Import command completed. Check Galaxy for status."
