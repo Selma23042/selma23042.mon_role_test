@@ -1,35 +1,23 @@
 galaxy_info:
-  # Informations obligatoires
-  author: Selma23042
-galaxy_info:
-  # Informations obligatoires
   author: Selma23042
   namespace: selma23042
-  role_name: ci_molecule  # CRITIQUE: remplace 'ci-molecule' par 'ci_molecule'
+  role_name: ci_molecule
   description: "Rôle Ansible pour CI avec Molecule"
   license: MIT
-  
-  # Version minimale d'Ansible supportée
   min_ansible_version: "2.9"
-  
-  # Plateformes supportées
   platforms:
     - name: Ubuntu
       versions:
-        - "20.04"
-        - "22.04"
+        - focal
+        - jammy
     - name: Debian
       versions:
         - bullseye
         - bookworm
-  
-  # Tags pour faciliter la recherche
   galaxy_tags:
     - testing
     - molecule
     - ci
     - development
-    - quality
 
-# Dépendances (obligatoire, même si vide)
 dependencies: []
