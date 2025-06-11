@@ -26,8 +26,11 @@ pipeline {
               # Run molecule tests
               molecule test
               
+              # Create Galaxy token file for authentication
+              mkdir -p /root/.ansible
+              echo "$GALAXY_TOKEN" > /root/.ansible/galaxy_token
+              
               # Build and publish to Galaxy
-              ansible-galaxy login --token $GALAXY_TOKEN
               ansible-galaxy role build
               ansible-galaxy role publish mon_role_test-*.tar.gz
             '''
