@@ -59,7 +59,10 @@ pipeline {
                             
                             # Version du rôle
                             if [ -f "meta/main.yml" ]; then
-                                ROLE_VERSION=$(grep -E "^[[:space:]]*version:" meta/main.yml | sed 's/.*version:[[:space:]]*//' | tr -d '"' || "1.0.0")
+                                ROLE_VERSION=$(grep -E "^[[:space:]]*version:" meta/main.yml | sed 's/.*version:[[:space:]]*//' | tr -d '"' | tr -d "'" || echo "1.0.0")
+                                if [ -z "$ROLE_VERSION" ]; then
+                                    ROLE_VERSION=$(git describe --tags --always 2>/dev/null || echo "1.0.0")
+                                fi
                             else
                                 ROLE_VERSION=$(git describe --tags --always 2>/dev/null || echo "1.0.0")
                             fi
@@ -77,6 +80,11 @@ pipeline {
                                 --exclude='*.pyc' \\
                                 --exclude='.pytest_cache' \\
                                 --exclude='Jenkinsfile' \\
+                                --exclude='venv' \\
+                                --exclude='env' \\
+                                --exclude='.venv' \\
+                                --exclude='node_modules' \\
+                                --exclude='.DS_Store' \\
                                 -czf "${ARCHIVE_NAME}" \\
                                 --transform="s,^,${ROLE_NAME}/," \\
                                 .
@@ -96,12 +104,20 @@ pipeline {
                             echo "GitHub User: ${GITHUB_USER}"
                             echo "Repository: ${REPO_NAME}"
                             
+                            # Vérifier que le namespace existe
+                            echo "⚠️  IMPORTANT: Assurez-vous que le namespace '${GITHUB_USER}' existe sur Ansible Galaxy"
+                            echo "   Visitez: https://galaxy.ansible.com/ui/standalone/namespaces/${GITHUB_USER}/"
+                            
                             ansible-galaxy role import --token=${GALAXY_TOKEN} ${GITHUB_USER} ${REPO_NAME}
                             
                             if [ $? -eq 0 ]; then
                                 echo "✅ Successfully published to Ansible Galaxy!"
                             else
                                 echo "❌ Failed to publish to Ansible Galaxy"
+                                echo "💡 Vérifiez que:"
+                                echo "   - Le namespace '${GITHUB_USER}' existe sur Galaxy"
+                                echo "   - Votre token Galaxy est valide"
+                                echo "   - Le repository est public"
                                 exit 1
                             fi
                             

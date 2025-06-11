@@ -2,6 +2,7 @@ galaxy_info:
   author: Selma23042
   namespace: selma23042
   role_name: mon_role_test
+  version: "1.0.0"
   description: "Rôle Ansible pour CI avec Molecule"
   license: MIT
   min_ansible_version: "2.9"
