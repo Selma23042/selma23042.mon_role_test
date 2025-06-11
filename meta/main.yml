@@ -5,7 +5,7 @@ galaxy_info:
   license: MIT
   min_ansible_version: "2.1"
   role_name: mon_role_test
-  namespace: selma23042
+  namespace: Selma23042
   platforms:
     - name: Ubuntu
       versions:
