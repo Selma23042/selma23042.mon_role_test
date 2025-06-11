@@ -2,7 +2,6 @@ pipeline {
     agent any
 
     environment {
-        GALAXY_TOKEN = credentials('galaxy_token')
         GIT_URL = "${env.GIT_URL}"
     }
 
@@ -31,7 +30,7 @@ pipeline {
             }
         }
 
-        stage('Publish to Galaxy (fallback if import fails)') {
+        stage('Build Role Archive') {
             steps {
                 script {
                     docker.image('python:3.10').inside() {
@@ -39,39 +38,26 @@ pipeline {
                             set -e
 
                             pip install --upgrade pip
-                            pip install ansible requests
-
-                            echo "📦 Détection des infos du rôle..."
+                            pip install ansible
 
                             ROLE_NAME=$(grep -E "^[[:space:]]*role_name:" meta/main.yml | sed 's/.*role_name:[[:space:]]*//' | tr -d '"' || basename $(pwd))
                             ROLE_VERSION=$(grep -E "^[[:space:]]*version:" meta/main.yml | sed 's/.*version:[[:space:]]*//' | tr -d '"' | tr -d "'" || git describe --tags --always 2>/dev/null || echo "1.0.0")
 
                             ARCHIVE_NAME="${ROLE_NAME}-${ROLE_VERSION}.tar.gz"
 
-                            GITHUB_USER=$(echo ${GIT_URL} | sed 's|https://github.com/||' | cut -d'/' -f1)
-                            REPO_NAME=$(echo ${GIT_URL} | sed 's|https://github.com/.*/||' | sed 's|.git||')
+                            echo "📦 Création de l'archive ${ARCHIVE_NAME}..."
 
-                            echo "📌 GitHub: ${GITHUB_USER}/${REPO_NAME}"
+                            tar --exclude='.git*' \
+                                --exclude='molecule' \
+                                --exclude='*.tar.gz' \
+                                --exclude='__pycache__' \
+                                --exclude='*.pyc' \
+                                --exclude='Jenkinsfile' \
+                                -czf "${ARCHIVE_NAME}" \
+                                --transform="s,^,${ROLE_NAME}/," .
 
-                            echo "⚙️ Tentative de publication via IMPORT..."
-                            if ansible-galaxy role import --token="${GALAXY_TOKEN}" "${GITHUB_USER}" "${REPO_NAME}"; then
-                                echo "✅ IMPORT réussi sur Galaxy !"
-                            else
-                                echo "❌ IMPORT échoué. Fallback vers publication via archive..."
-
-                                echo "📦 Construction de l'archive..."
-                                tar --exclude='.git*' \
-                                    --exclude='molecule' \
-                                    --exclude='*.tar.gz' \
-                                    --exclude='__pycache__' \
-                                    --exclude='*.pyc' \
-                                    --exclude='Jenkinsfile' \
-                                    -czf "${ARCHIVE_NAME}" \
-                                    --transform="s,^,${ROLE_NAME}/," .
-
-                                echo "📤 Publication via .tar.gz..."
-                                ansible-galaxy role publish "${ARCHIVE_NAME}" --token "${GALAXY_TOKEN}" || exit 1
-                            fi
+                            echo "📁 Archive créée : ${ARCHIVE_NAME}"
+                            echo "ℹ️  Pour installer manuellement : ansible-galaxy role install ${ARCHIVE_NAME}"
                         '''
                     }
                 }
@@ -79,15 +65,16 @@ pipeline {
 
             post {
                 always {
-                    archiveArtifacts artifacts: '*.tar.gz', allowEmptyArchive: true
+                    archiveArtifacts artifacts: '*.tar.gz', allowEmptyArchive: false
                 }
                 success {
-                    echo '🎉 Rôle publié avec succès sur Galaxy !'
+                    echo '✅ Rôle archivé avec succès. Disponible pour installation locale.'
                 }
                 failure {
-                    echo '❌ Échec de la publication sur Ansible Galaxy.'
+                    echo '❌ Échec de la création de l’archive.'
                 }
             }
         }
     }
 }
+
