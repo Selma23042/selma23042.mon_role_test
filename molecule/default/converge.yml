@@ -1,0 +1,6 @@
+---
+- name: Test du rôle local
+  hosts: all
+  become: true
+  roles:
+    - role: ../../  # chemin relatif vers le rôle à tester

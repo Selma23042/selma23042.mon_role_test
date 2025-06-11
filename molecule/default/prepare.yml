@@ -1,0 +1,17 @@
+---
+- name: Prepare molecule container
+  hosts: all
+  gather_facts: false
+  tasks:
+    - name: Wait for container to be ready
+      wait_for_connection:
+        timeout: 60
+        delay: 5
+      
+    - name: Create ansible temp directory
+      raw: mkdir -p /tmp/.ansible/tmp && chmod 755 /tmp/.ansible/tmp
+      become: true
+      changed_when: false
+      
+    - name: Gather facts
+      setup:

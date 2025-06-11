@@ -1,0 +1,7 @@
+---
+# mon_role_test/tasks/main.yml
+- name: Créer un fichier test
+  file:
+    path: /tmp/fichier_test.txt
+    state: touch
+
