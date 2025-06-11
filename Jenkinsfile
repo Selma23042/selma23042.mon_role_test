@@ -59,7 +59,7 @@ pipeline {
                                 --token "$GALAXY_TOKEN" \\
                                 --branch main \\
                                 --role-name mon_role_test \\
-                                selma23042 selma23042.mon_role_test
+                                selma23042 selma23042.ci_molecule
                             
                             # Vérifier le statut de l'import
                             if [ $? -eq 0 ]; then
