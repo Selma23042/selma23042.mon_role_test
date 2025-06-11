@@ -15,10 +15,30 @@ platforms:
     tmpfs:
       - /run
       - /tmp
+    # Add environment variables to help with systemd
+    env:
+      container: docker
 provisioner:
   name: ansible
   config_options:
     defaults:
       remote_tmp: /tmp/.ansible/tmp
+      gathering: explicit
+    ssh_connection:
+      pipelining: true
 verifier:
   name: ansible
+scenario:
+  test_sequence:
+    - dependency
+    - cleanup
+    - destroy
+    - syntax
+    - create
+    - prepare
+    - converge
+    - idempotence
+    - side_effect
+    - verify
+    - cleanup
+    - destroy

@@ -3,15 +3,27 @@
   hosts: all
   gather_facts: false
   tasks:
+    - name: Wait for systemd to be ready
+      wait_for:
+        path: /run/systemd/system
+        timeout: 60
+      
     - name: Wait for container to be ready
       wait_for_connection:
         timeout: 60
         delay: 5
-      
+
     - name: Create ansible temp directory
       raw: mkdir -p /tmp/.ansible/tmp && chmod 755 /tmp/.ansible/tmp
       become: true
       changed_when: false
-      
+
+    - name: Install required packages
+      raw: |
+        apt-get update
+        apt-get install -y python3 python3-pip sudo
+      become: true
+      changed_when: false
+
     - name: Gather facts
       setup:
