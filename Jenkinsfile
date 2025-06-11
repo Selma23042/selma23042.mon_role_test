@@ -36,6 +36,7 @@ pipeline {
         stage('Publish to Galaxy') {
             when {
                 branch 'main'
+                tag pattern: 'v*', comparator: 'REGEXP'
             }
             steps {
                 script {
