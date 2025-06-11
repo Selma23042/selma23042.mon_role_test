@@ -1,7 +1,10 @@
 ---
-# mon_role_test/tasks/main.yml
+# tasks file for mon_role_test
 - name: Créer un fichier test
-  file:
+  ansible.builtin.file:        # ← utiliser le FQCN
     path: /tmp/fichier_test.txt
     state: touch
-
+    mode: '0644'               # ← éviter risky permissions
+- name: Dire que le fichier a été créé
+  ansible.builtin.debug:
+    msg: "Le fichier a été créé."
