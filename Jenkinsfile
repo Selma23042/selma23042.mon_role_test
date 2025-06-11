@@ -35,9 +35,11 @@ pipeline {
         
         stage('Publish to Galaxy') {
             when {
-                branch 'main'
-                tag pattern: 'v*', comparator: 'REGEXP'
-            }
+                anyOf {
+            branch 'main'
+            tag pattern: 'v\\d+\\.\\d+\\.\\d+', comparator: 'REGEXP'
+        }
+                }
             steps {
                 script {
                     docker.image('python:3.10').inside() {
