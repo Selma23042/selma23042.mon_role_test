@@ -78,8 +78,12 @@ pipeline {
     
     post {
         always {
-            node('any') {  // Spécifiez un label ici
-                cleanWs()
+            script {
+                try {
+                    cleanWs()
+                } catch (Exception e) {
+                    echo "Warning: Failed to clean workspace: ${e.getMessage()}"
+                }
             }
         }
         success {
@@ -91,7 +95,7 @@ pipeline {
             echo '❌ Pipeline failed! Check the logs for details.'
         }
         unstable {
-            echo '⚠  Pipeline completed with warnings.'
+            echo '⚠️  Pipeline completed with warnings.'
         }
     }
 }
