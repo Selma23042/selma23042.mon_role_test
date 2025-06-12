@@ -78,7 +78,7 @@ pipeline {
     
     post {
         always {
-            node {
+            node('any') {  // Spécifiez un label ici
                 cleanWs()
             }
         }
