@@ -78,13 +78,7 @@ pipeline {
     
     post {
         always {
-            script {
-                try {
-                    cleanWs()
-                } catch (Exception e) {
-                    echo "Warning: Failed to clean workspace: ${e.getMessage()}"
-                }
-            }
+            cleanWs()
         }
         success {
             echo '🎉 Pipeline completed successfully!'
@@ -95,7 +89,7 @@ pipeline {
             echo '❌ Pipeline failed! Check the logs for details.'
         }
         unstable {
-            echo '⚠️  Pipeline completed with warnings.'
+            echo '⚠  Pipeline completed with warnings.'
         }
     }
 }
